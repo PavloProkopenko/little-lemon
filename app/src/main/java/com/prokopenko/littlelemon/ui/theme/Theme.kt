@@ -1,70 +1,105 @@
 package com.prokopenko.littlelemon.ui.theme
 
-import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
+
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.prokopenko.littlelemon.R
 
-private val DarkColorScheme = darkColorScheme(
-        primary = Purple80,
-        secondary = PurpleGrey80,
-        tertiary = Pink80
+data class AppColors(
+    val primary1 : Color = Color(0xFF495E57),
+    val primary2 : Color = Color(0xFFF4CE14),
+    val secondary1 : Color = Color(0xFFEE9972),
+    val secondary2 : Color = Color(0xFFFBDABB),
+    val highlight1 : Color = Color(0xFFEDEFEE),
+    val highlight2 : Color = Color(0xFF333333)
 )
 
-private val LightColorScheme = lightColorScheme(
-        primary = Purple40,
-        secondary = PurpleGrey40,
-        tertiary = Pink40
+internal val LocalColors = staticCompositionLocalOf { AppColors() }
 
-        /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+private val karla = FontFamily(
+    Font(R.font.karla_regular, FontWeight.Normal)
 )
+
+private val markazi = FontFamily(
+    Font(R.font.markazi_text_regular, FontWeight.Normal)
+)
+
+data class AppTypography(
+    val display : TextStyle = TextStyle(
+        fontFamily = markazi,
+        fontWeight = FontWeight.Medium,
+        fontSize = 64.sp
+    ),
+    val leadText : TextStyle = TextStyle(
+        fontFamily = karla,
+        fontWeight = FontWeight.Medium,
+        fontSize = 18.sp
+    ),
+    val sectionTitle : TextStyle = TextStyle(
+        fontFamily = karla,
+        fontWeight = FontWeight.ExtraBold,
+        fontSize = 20.sp
+    ),
+    val sectionCategory : TextStyle = TextStyle(
+        fontFamily = karla,
+        fontWeight = FontWeight.ExtraBold,
+        fontSize = 16.sp
+    ),
+    val cardTitle : TextStyle = TextStyle(
+        fontFamily = karla,
+        fontWeight = FontWeight.Bold,
+        fontSize = 18.sp
+    ),
+    val paragraph : TextStyle = TextStyle(
+        fontFamily = karla,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp,
+        lineHeight = 1.5.sp
+    ),
+    val highlight : TextStyle = androidx.compose.ui.text.TextStyle(
+        fontFamily = karla,
+        fontWeight = FontWeight.Medium,
+        fontSize = 16.sp
+    ),
+    val subTitle : TextStyle = TextStyle(
+        fontFamily = markazi,
+        fontWeight = FontWeight.Normal,
+        fontSize = 40.sp
+    ),
+)
+
+internal val LocalTypography = staticCompositionLocalOf { AppTypography() }
+
+object AppTheme{
+    val color : AppColors
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalColors.current
+
+    val typography : AppTypography
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalTypography.current
+}
 
 @Composable
-fun LittleLemonTheme(
-        darkTheme: Boolean = isSystemInDarkTheme(),
-        // Dynamic color is available on Android 12+
-        dynamicColor: Boolean = true,
-        content: @Composable () -> Unit
+fun AppTheme(
+    colors: AppColors = AppTheme.color,
+    typography : AppTypography = AppTheme.typography,
+    content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    CompositionLocalProvider(
+        LocalColors provides colors,
+        LocalTypography provides typography
+    ) {
+        content()
     }
-    val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
-            val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
-        }
-    }
-
-    MaterialTheme(
-            colorScheme = colorScheme,
-            typography = Typography,
-            content = content
-    )
 }
