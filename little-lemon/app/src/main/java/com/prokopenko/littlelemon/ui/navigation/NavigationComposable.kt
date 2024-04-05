@@ -25,7 +25,7 @@ fun Navigation(navHostController: NavHostController, preferenceRepository: Prefe
         }
 
         composable(route = Destinations.Home.getRoute()) {
-            HomeScreen()
+            HomeScreen(navHostController)
         }
 
         composable(route = Destinations.Profile.getRoute()) {

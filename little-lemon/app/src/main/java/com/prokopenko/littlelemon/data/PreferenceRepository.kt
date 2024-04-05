@@ -4,6 +4,7 @@ import android.content.Context
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 import com.prokopenko.littlelemon.data.model.User
+import kotlinx.coroutines.flow.flow
 
 class PreferenceRepository(
     private val context: Context
@@ -40,5 +41,18 @@ class PreferenceRepository(
             context.getSharedPreferences(USER_PREFERENCE_FILE_KEY, Context.MODE_PRIVATE)
                 ?: return false
         return sharedPref.getBoolean(IS_USER_LOGGED_IN, false)
+    }
+
+    fun getUser() = flow {
+        val sharedPref =
+            context.getSharedPreferences(USER_PREFERENCE_FILE_KEY, Context.MODE_PRIVATE)
+                ?: return@flow
+        emit(
+            User(
+                firstName = sharedPref.getString(USER_FIRST_NAME, "") ?:return@flow,
+                lastName = sharedPref.getString(USER_LAST_NAME,"") ?:return@flow,
+                email = sharedPref.getString(USER_EMAIL, "") ?: return@flow
+            )
+        )
     }
 }
