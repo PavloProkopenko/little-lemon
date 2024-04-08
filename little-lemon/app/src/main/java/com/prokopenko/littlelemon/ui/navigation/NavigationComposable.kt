@@ -29,7 +29,7 @@ fun Navigation(navHostController: NavHostController, preferenceRepository: Prefe
         }
 
         composable(route = Destinations.Profile.getRoute()) {
-            ProfileScreen()
+            ProfileScreen(navHostController)
         }
     }
 }

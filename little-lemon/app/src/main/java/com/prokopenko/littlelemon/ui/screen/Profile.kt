@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -21,32 +23,40 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.prokopenko.littlelemon.viewmodel.ProfileVM
 import com.prokopenko.littlelemon.data.model.User
 import com.prokopenko.littlelemon.ui.theme.AppTheme
 import com.prokopenko.littlelemon.R
+import com.prokopenko.littlelemon.ui.navigation.Destinations
 
 
 @Composable
-fun ProfileScreen(profileVm: ProfileVM = viewModel()) {
+fun ProfileScreen(navController: NavController,profileVm: ProfileVM = viewModel()) {
     val user by profileVm.user.collectAsStateWithLifecycle()
-    ProfileUI(user = user)
+    ProfileUI(user = user) {
+        profileVm.logOut()
+
+        navController.popBackStack(Destinations.Home.getRoute(), true)
+        navController.navigate(Destinations.Onboard.getRoute())
+    }
 }
 
 @Composable
-fun ProfileUI(user: User?) {
+fun ProfileUI(user: User?, logOut: () -> Unit ) {
     Column (
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp, 0.dp)
+            .verticalScroll(rememberScrollState())
     ){
         Image(
             painter = painterResource(id = R.drawable.logo) ,
             contentDescription = "Little lemon logo",
             modifier = Modifier
-                .padding(24.dp, 16.dp)
+                .padding(32.dp, 16.dp)
                 .fillMaxWidth()
-                .height(100.dp)
+                .height(80.dp)
         )
         Text(
             text = stringResource(id = R.string.user_profile_title),
@@ -68,13 +78,15 @@ fun ProfileUI(user: User?) {
         UserInfoLabel(label = stringResource(id = R.string.user_profile_email_label))
         UserInfoText(info = user?.email ?: "")
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         Button(
-            onClick = { /*TODO*/ },
+            onClick = { logOut() },
             colors = ButtonDefaults.filledTonalButtonColors(containerColor = AppTheme.color.primary2),
             shape = MaterialTheme.shapes.medium,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(0.dp, 16.dp)
         ) {
             Text(text = stringResource(id = R.string.user_profile_log_out_btn_txt))
         }
@@ -84,7 +96,9 @@ fun ProfileUI(user: User?) {
 @Composable
 @Preview(showBackground = true)
 fun ProfileScreenPreview() {
-    ProfileUI(User("Pavlo", "Prokopenko", "pavlo@example.com"))
+    ProfileUI(
+        User("Pavlo", "Prokopenko", "pavlo@example.com")
+    ) {}
 }
 
 @Composable
