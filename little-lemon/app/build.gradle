@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    id 'kotlin-kapt'
+    id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
 android {
@@ -29,6 +31,7 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+
     }
     kotlinOptions {
         jvmTarget = '1.8'
@@ -49,6 +52,7 @@ android {
 dependencies {
 
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation libs.androidx.lifecycle.runtime.ktx
     implementation libs.androidx.navigation.compose
     implementation libs.androidx.core.ktx
     implementation libs.androidx.lifecycle.runtime.ktx
