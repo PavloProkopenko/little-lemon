@@ -123,5 +123,6 @@ fun UserInfoText(
             .padding(0.dp, 16.dp)
             .fillMaxWidth()
             .border(1.dp, AppTheme.color.primary1, shape = MaterialTheme.shapes.large)
+            .height(24.dp)
     )
 }

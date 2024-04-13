@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -27,7 +26,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +45,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.HorizontalDivider
 import com.prokopenko.littlelemon.R
 import com.prokopenko.littlelemon.data.model.MenuItem
 import com.prokopenko.littlelemon.ui.navigation.Destinations
@@ -58,6 +57,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.ImeAction
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 
 @Composable
 fun HomeScreen(navController: NavController, homeVM: HomeVM = viewModel()) {
@@ -295,7 +296,7 @@ fun MenuBreakDown() {
             CategoryItem(text = stringResource(R.string.desserts_category_label))
             CategoryItem(text = stringResource(R.string.slides_category_label))
         }
-        Divider(
+        HorizontalDivider(
             modifier = Modifier
                 .padding(top = 4.dp)
                 .height(1.dp),
@@ -320,6 +321,7 @@ fun CategoryItem(text: String) {
     )
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun MenuItem(item: MenuItem) {
     Column(
@@ -351,15 +353,16 @@ fun MenuItem(item: MenuItem) {
                     style = AppTheme.typography.leadText
                 )
             }
-            Image(
-                painter = painterResource(id = R.drawable.bruschetta),
+            GlideImage(
+                model = item.image,
                 contentDescription = "Food Image",
                 modifier = Modifier
-                    .size(60.dp)
-                    .clip(MaterialTheme.shapes.medium)
+                    .size(80.dp)
+                    .clip(MaterialTheme.shapes.medium),
+                contentScale = ContentScale.Crop
             )
         }
-        Divider(
+        HorizontalDivider(
             modifier = Modifier
                 .padding(vertical = 24.dp)
                 .height(1.dp),

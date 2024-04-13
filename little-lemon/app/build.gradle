@@ -82,7 +82,10 @@ dependencies {
     implementation libs.androidx.room.runtime
     annotationProcessor "androidx.room:room-compiler:$room_version"
     // To use Kotlin annotation processing tool (kapt)
+    //noinspection KaptUsageInsteadOfKsp
     kapt "androidx.room:room-compiler:$room_version"
+
+    implementation libs.compose
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit
