@@ -5,7 +5,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -56,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.prokopenko.littlelemon.data.model.MenuItemLocal
@@ -79,6 +78,9 @@ fun HomeScreenUI(
     onRetry: () -> Unit,
     navigateToProfile: () -> Unit
     ) {
+    var query by rememberSaveable {
+        mutableStateOf("")
+    }
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -90,7 +92,9 @@ fun HomeScreenUI(
             Column {
                 NavBar(navigateToProfile)
                 Spacer(modifier = Modifier.height(8.dp))
-                HeroSection()
+                HeroSection {
+                    query = it
+                }
             }
         }
         stickyHeader(
@@ -102,8 +106,11 @@ fun HomeScreenUI(
 
         if (result is Result.Success)
             items(
-                items = result.data,
-                key = { item -> item.id }
+                items = result.data
+                    .filter {
+                        query.isBlank()||
+                                it.title.contains(other = query, ignoreCase = true)
+                    }
             ) {
                 MenuItem(item = it)
             }
@@ -177,7 +184,7 @@ fun NavBar(navigateToProfile: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnsafeOptInUsageError")
 @Composable
-fun HeroSection() {
+fun HeroSection(onSearch: (String) -> Unit) {
     var query by rememberSaveable {
         mutableStateOf("")
     }
@@ -212,7 +219,7 @@ fun HeroSection() {
                     .width(0.dp)
                     .align(Alignment.CenterVertically),
                 text = stringResource(R.string.home_hero_section_about),
-                style = AppTheme.typography.paragraph,
+                style = AppTheme.typography.highlight,
                 color = AppTheme.color.highlight1
             )
             Image(
@@ -230,7 +237,10 @@ fun HeroSection() {
             modifier = Modifier
                 .fillMaxWidth(),
             value = query,
-            onValueChange = { query = it },
+            onValueChange = {
+                query = it
+                if (it.isBlank())
+                    onSearch(it)},
             placeholder = {
                 Text(
                     text = stringResource(id = R.string.home_search_bar_hint),
@@ -252,7 +262,7 @@ fun HeroSection() {
                 imeAction = ImeAction.Search,
             ),
             keyboardActions = KeyboardActions(
-                onSearch = {/*TODO: SEARCH QUERY*/ }
+                onSearch = {onSearch(query)}
             ),
             shape = MaterialTheme.shapes.medium,
             colors = TextFieldDefaults.textFieldColors(
@@ -286,10 +296,8 @@ fun MenuBreakDown() {
         )
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(start = 8.dp),
-            horizontalArrangement = Arrangement.Center
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             CategoryItem(text = stringResource(R.string.starters_category_label))
             CategoryItem(text = stringResource(R.string.mains_category_label))
@@ -344,6 +352,8 @@ fun MenuItem(item: MenuItemLocal) {
             ) {
                 Text(
                     text = item.description,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                     style = AppTheme.typography.paragraph,
                     modifier = Modifier
                         .padding(top = 8.dp, end = 8.dp, bottom = 8.dp)
