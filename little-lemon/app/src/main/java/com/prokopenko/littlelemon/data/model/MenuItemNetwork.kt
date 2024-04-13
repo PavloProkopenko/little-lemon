@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class MenuItem(
+data class MenuItemNetwork(
     @SerialName("image")
     var image: String = "",
     @SerialName("price")
@@ -17,4 +17,13 @@ data class MenuItem(
     var title: String = "",
     @SerialName("category")
     var category: String = ""
-)
+) {
+    fun toLocal() = MenuItemLocal(
+        image = image,
+        price = price,
+        description = description,
+        id = id,
+        title = title,
+        category = category
+    )
+}
