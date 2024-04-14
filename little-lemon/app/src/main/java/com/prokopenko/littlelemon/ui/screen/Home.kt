@@ -54,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
@@ -78,9 +79,8 @@ fun HomeScreenUI(
     onRetry: () -> Unit,
     navigateToProfile: () -> Unit
     ) {
-    var query by rememberSaveable {
-        mutableStateOf("")
-    }
+    var query by rememberSaveable { mutableStateOf("")}
+    var selectedCategory by rememberSaveable { mutableStateOf<String?>(null) }
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -100,26 +100,61 @@ fun HomeScreenUI(
         stickyHeader(
             key = "sticky_header"
         ) {
-            MenuBreakDown()
+            MenuBreakDown(selectedCategory) {
+                selectedCategory = it
+            }
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        if (result is Result.Success)
-            items(
-                items = result.data
-                    .filter {
-                        query.isBlank()||
-                                it.title.contains(other = query, ignoreCase = true)
-                    }
-            ) {
-                MenuItem(item = it)
+        if (result is Result.Success) {
+            //if user has searched something or if user has selected some
+            //category then filter
+            val filteredItem =
+                if (query.isNotBlank() || selectedCategory != null)
+                    result.data
+                        .filter {
+                            //if query is blank then don't filter by query
+                            (query.isBlank() || it.title.contains(
+                                other = query,
+                                ignoreCase = true
+                            )) &&
+                                    //if no category is selected then don't filter by category
+                                    (selectedCategory == null || it.category.contains(
+                                        other = selectedCategory!!.toString(),
+                                        ignoreCase = true
+                                    ))
+                        }
+                else result.data
+            if (filteredItem.isNotEmpty()) {
+                items(
+                    items = filteredItem,
+                    key = { item -> item.id }
+                ) {
+                    MenuItem(item = it)
+                }
+            } else {
+                item(key = "no_item_found_msg") {
+                    NoItemFoundMsg()
+                }
             }
-        else item(
+        } else item(
             key = "empty_screen"
         ) {
             EmptyScreen(result = result, onRetry)
         }
     }
+}
+
+@Composable
+fun NoItemFoundMsg() {
+    Text(
+        text = stringResource(R.string.no_menu_item_found_msg),
+        style = AppTheme
+            .typography.leadText,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .padding(16.dp)
+    )
 }
 
 @Composable
@@ -277,7 +312,10 @@ fun HeroSection(onSearch: (String) -> Unit) {
 }
 
 @Composable
-fun MenuBreakDown() {
+fun MenuBreakDown(
+    selectedCategory: String?,
+    onCategorySelectionChange: (selectedCategory: String?) -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -299,10 +337,26 @@ fun MenuBreakDown() {
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            CategoryItem(text = stringResource(R.string.starters_category_label))
-            CategoryItem(text = stringResource(R.string.mains_category_label))
-            CategoryItem(text = stringResource(R.string.desserts_category_label))
-            CategoryItem(text = stringResource(R.string.slides_category_label))
+            CategoryItem(
+                categoryName = stringResource(R.string.starters_category_label),
+                selectedCategory,
+                onCategorySelectionChange
+            )
+            CategoryItem(
+                categoryName = stringResource(R.string.mains_category_label),
+                selectedCategory,
+                onCategorySelectionChange
+            )
+            CategoryItem(
+                categoryName = stringResource(R.string.desserts_category_label),
+                selectedCategory,
+                onCategorySelectionChange
+            )
+            CategoryItem(
+                categoryName = stringResource(R.string.slides_category_label),
+                selectedCategory,
+                onCategorySelectionChange
+            )
         }
         HorizontalDivider(
             modifier = Modifier
@@ -313,18 +367,38 @@ fun MenuBreakDown() {
     }
 }
 
+/**
+ * @param categoryName category Name to be displayed.
+ * @param selectedCategory selected Category name. Null if no category is selected.
+ * @param onCheckedChange callback called when it is clicked.
+ * If this category is not the [selectedCategory] then the [categoryName]
+ * name comes as a parameter else null.
+ */
 @Composable
-fun CategoryItem(text: String) {
+fun CategoryItem(
+    categoryName: String,
+    selectedCategory: String?,
+    onCheckedChange: (category: String?) -> Unit
+    ) {
     Text(
-        text = text,
+        text = categoryName,
         modifier = Modifier
             .padding(vertical = 8.dp, horizontal = 8.dp)
             .background(
-                color = AppTheme.color.primary1.copy(alpha = 0.2F),
+                color = if(categoryName == selectedCategory) AppTheme.color.primary1 else AppTheme.color.primary1.copy(
+                    alpha = 0.2F
+                ),
                 shape = MaterialTheme.shapes.medium
             )
-            .padding(8.dp),
-        color = AppTheme.color.primary1,
+            .padding(8.dp)
+            .clickable {
+                       onCheckedChange(
+                           if (selectedCategory == categoryName)
+                               null
+                           else categoryName
+                       )
+            },
+        color = if(categoryName == selectedCategory) AppTheme.color.secondary2 else AppTheme.color.primary1,
         style = AppTheme.typography.sectionCategory
     )
 }
